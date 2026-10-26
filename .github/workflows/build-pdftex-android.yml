@@ -41,6 +41,7 @@ jobs:
             --without-x --disable-shared --disable-all-pkgs \
             --enable-pdftex --disable-synctex --disable-poppler \
             --enable-native-texlive-build --enable-cxx-runtime-hack \
+            --disable-aleph --disable-xetex \
             --without-system-cairo --without-system-freetype2 --without-system-gd \
             --without-system-gmp --without-system-graphite2 --without-system-harfbuzz \
             --without-system-icu --without-system-kpathsea --without-system-libgs \
@@ -120,6 +121,7 @@ jobs:
             --without-x --disable-shared --disable-all-pkgs \
             --enable-pdftex --disable-synctex --disable-poppler \
             --enable-native-texlive-build \
+            --disable-aleph --disable-xetex \
             --without-system-cairo --without-system-freetype2 --without-system-gd \
             --without-system-gmp --without-system-graphite2 --without-system-harfbuzz \
             --without-system-icu --without-system-kpathsea --without-system-libgs \
