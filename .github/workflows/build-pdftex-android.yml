@@ -1,0 +1,244 @@
+name: Build pdfTeX for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'source/**'
+      - 'android/**'
+      - '.github/workflows/build-pdftex-android.yml'
+
+env:
+  # Folder inside the repo that contains "src/" (the cut-down TeX Live tree).
+  # Zip structure was pdftex-stable/source/src -> if your repo root IS
+  # pdftex-stable, this is "source". Change if your fork is laid out differently.
+  TEX_ROOT: source
+  ANDROID_API: 24
+
+jobs:
+  # ------------------------------------------------------------------
+  # 1) Native (x86_64 Linux) build: gives us tangle/ctangle/tie, which
+  #    the cross build needs on the build machine.
+  # ------------------------------------------------------------------
+  native-tools:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install build deps
+        run: sudo apt-get update && sudo apt-get install -y build-essential flex bison
+
+      - name: Configure + build native pdfTeX
+        run: |
+          set -eux
+          mkdir -p build-native && cd build-native
+          ../${TEX_ROOT}/src/configure -C \
+            --without-x --disable-shared --disable-all-pkgs \
+            --enable-pdftex --disable-synctex --disable-poppler \
+            --enable-native-texlive-build --enable-cxx-runtime-hack \
+            --without-system-cairo --without-system-freetype2 --without-system-gd \
+            --without-system-gmp --without-system-graphite2 --without-system-harfbuzz \
+            --without-system-icu --without-system-kpathsea --without-system-libgs \
+            --without-system-libpaper --without-system-libpng --without-system-mpfi \
+            --without-system-mpfr --without-system-pixman --without-system-poppler \
+            --without-system-potrace --without-system-ptexenc --without-system-teckit \
+            --without-system-xpdf --without-system-zlib --without-system-zziplib \
+            CFLAGS=-O2 CXXFLAGS=-O2
+          make -j"$(nproc)"
+          make -C texk/web2c pdftex
+          ./texk/web2c/pdftex --version
+
+      - name: Collect build-machine tools
+        run: |
+          set -eux
+          mkdir -p native-bin
+          for t in tangle ctangle tie; do cp build-native/texk/web2c/$t native-bin/; done
+          # configure demands "otangle" when cross-compiling, but pdfTeX never uses it.
+          printf '#!/bin/sh\nexit 0\n' > native-bin/otangle
+          chmod +x native-bin/*
+          ls -l native-bin
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: native-tools
+          path: native-bin
+          retention-days: 3
+
+  # ------------------------------------------------------------------
+  # 2) Cross-compile pdfTeX with the NDK, one job per ABI.
+  # ------------------------------------------------------------------
+  android:
+    needs: native-tools
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - abi: arm64-v8a
+            host: aarch64-linux-android
+            clang: aarch64-linux-android
+            extra_ld: "-Wl,-z,max-page-size=16384"
+          - abi: armeabi-v7a
+            host: arm-linux-androideabi
+            clang: armv7a-linux-androideabi
+            extra_ld: ""
+          - abi: x86_64
+            host: x86_64-linux-android
+            clang: x86_64-linux-android
+            extra_ld: "-Wl,-z,max-page-size=16384"
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install build deps
+        run: sudo apt-get update && sudo apt-get install -y build-essential flex bison
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: native-tools
+          path: native-bin
+
+      - name: Cross configure + build
+        run: |
+          set -eux
+          chmod +x native-bin/*
+          export PATH="$PWD/native-bin:$PATH"
+
+          NDK="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_HOME}"
+          TC="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          export CC="$TC/${{ matrix.clang }}${ANDROID_API}-clang"
+          export CXX="$TC/${{ matrix.clang }}${ANDROID_API}-clang++"
+          export AR="$TC/llvm-ar" RANLIB="$TC/llvm-ranlib" STRIP="$TC/llvm-strip"
+
+          mkdir -p build-android && cd build-android
+          ../${TEX_ROOT}/src/configure -C \
+            --build=x86_64-pc-linux-gnu --host=${{ matrix.host }} \
+            --without-x --disable-shared --disable-all-pkgs \
+            --enable-pdftex --disable-synctex --disable-poppler \
+            --enable-native-texlive-build \
+            --without-system-cairo --without-system-freetype2 --without-system-gd \
+            --without-system-gmp --without-system-graphite2 --without-system-harfbuzz \
+            --without-system-icu --without-system-kpathsea --without-system-libgs \
+            --without-system-libpaper --without-system-libpng --without-system-mpfi \
+            --without-system-mpfr --without-system-pixman --without-system-poppler \
+            --without-system-potrace --without-system-ptexenc --without-system-teckit \
+            --without-system-xpdf --without-system-zlib --without-system-zziplib \
+            BUILDCC=gcc BUILDCFLAGS=-O2 BUILDCPPFLAGS= BUILDLDFLAGS= \
+            CFLAGS="-O2 -fPIE" CXXFLAGS="-O2 -fPIE" \
+            LDFLAGS="-pie ${{ matrix.extra_ld }}"
+
+          make -j"$(nproc)"
+          make -C texk/web2c pdftex
+
+      - name: Package libpdftex.so
+        run: |
+          set -eux
+          NDK="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_HOME}"
+          STRIP="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+          mkdir -p out/${{ matrix.abi }}
+          cp build-android/texk/web2c/pdftex out/${{ matrix.abi }}/libpdftex.so
+          "$STRIP" out/${{ matrix.abi }}/libpdftex.so
+          file out/${{ matrix.abi }}/libpdftex.so
+          ls -l out/${{ matrix.abi }}/libpdftex.so
+
+      - name: Keep logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.abi }}
+          path: |
+            build-android/config.log
+            build-android/**/config.log
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pdftex-${{ matrix.abi }}
+          path: out
+
+  # ------------------------------------------------------------------
+  # 3) Minimal TeX tree (LaTeX + common packages) for the app's assets.
+  # ------------------------------------------------------------------
+  texmf:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install TeX Live (basic scheme + recommended LaTeX)
+        run: |
+          set -eux
+          wget -q https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+          tar xf install-tl-unx.tar.gz
+          cat > tl.profile <<'P'
+          selected_scheme scheme-basic
+          TEXDIR /tmp/tl
+          TEXMFLOCAL /tmp/tl/texmf-local
+          TEXMFSYSVAR /tmp/tl/texmf-var
+          TEXMFSYSCONFIG /tmp/tl/texmf-config
+          TEXMFVAR /tmp/tl-user/texmf-var
+          TEXMFCONFIG /tmp/tl-user/texmf-config
+          TEXMFHOME /tmp/tl-user/texmf
+          instopt_adjustpath 0
+          tlpdbopt_install_docfiles 0
+          tlpdbopt_install_srcfiles 0
+          tlpdbopt_autobackup 0
+          tlpdbopt_desktop_integration 0
+          tlpdbopt_file_assocs 0
+          P
+          perl install-tl-*/install-tl --no-interaction \
+            --profile=tl.profile \
+            --repository https://mirror.ctan.org/systems/texlive/tlnet
+          export PATH=/tmp/tl/bin/x86_64-linux:$PATH
+          tlmgr install collection-latexrecommended
+
+      - name: Build bundle
+        run: |
+          set -eux
+          export PATH=/tmp/tl/bin/x86_64-linux:$PATH
+          B=bundle/texmf
+          mkdir -p $B
+          cp -r /tmp/tl/texmf-dist $B/texmf-dist
+          cp -r /tmp/tl/texmf-var  $B/texmf-var
+          # prune things the app never needs
+          rm -rf $B/texmf-dist/doc $B/texmf-dist/source $B/texmf-dist/scripts \
+                 $B/texmf-dist/fonts/source $B/texmf-dist/fonts/opentype \
+                 $B/texmf-dist/fonts/truetype $B/texmf-dist/tex/lualatex \
+                 $B/texmf-dist/tex/luatex $B/texmf-dist/tex/xelatex $B/texmf-dist/tex/context \
+                 $B/texmf-dist/metapost $B/texmf-dist/tex/plain/context
+          find $B/texmf-var -name '*.fmt' -delete
+          find $B/texmf-var -name '*.log' -delete
+          mkdir -p $B/fmt
+          cp android/texmf.cnf bundle/texmf.cnf
+          # ls-R makes kpathsea lookups fast on Android storage
+          mktexlsr $B/texmf-dist $B/texmf-var
+          du -sh $B
+          (cd bundle && zip -qr ../texmf-android.zip .)
+          ls -lh texmf-android.zip
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: texmf-android
+          path: texmf-android.zip
+
+  # ------------------------------------------------------------------
+  # 4) One downloadable bundle: jniLibs/ + texmf zip.
+  # ------------------------------------------------------------------
+  bundle:
+    needs: [android, texmf]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: pdftex-*
+          path: jniLibs
+          merge-multiple: true
+      - uses: actions/download-artifact@v7
+        with:
+          name: texmf-android
+          path: assets
+      - run: find jniLibs assets -type f -exec ls -l {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pdftex-android-bundle
+          path: |
+            jniLibs
+            assets

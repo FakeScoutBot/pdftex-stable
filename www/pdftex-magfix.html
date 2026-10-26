@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+           "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!-- This is a copy of http://silas.psfc.mit.edu/pdftexpatch/
+     saved for posterity. It isn't linked. --karl, 30jan26. -->
+<html>
+<meta name="GENERATOR" content="TtHgold 3.77">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+<title> Patch for pdftex and magnification</title>
+ 
+<h1 align="center">Patch for pdftex and magnification </h1>
+
+<div class="p"><!----></div>
+
+<h2> Summary
+</h2>
+To fix an incompatibility in tetex,
+download the package <a href="pdftexpatch.tar.gz"><tt>pdftexpatch.tar.gz</tt></a>. Untar it; enter the
+directory; become root; run pdftexinipatch.sh. 
+
+<div class="p"><!----></div>
+It will adjust the formats for pdftex so that <tt>\magnification</tt>
+will work compatibly when producing pdf output.
+
+<div class="p"><!----></div>
+
+<h2> Explanation
+</h2>
+Modern usage of TeX often bypasses the dvi stage by using pdftex to
+produce pdf format output. In fact this is rapidly becoming
+standard. Unfortunately the authors of pdftex have adopted policies
+for defining the size of the text region that lead to
+incompatibilities in TeX processing when producing pdf. The error
+occurs when pdftex encounters a <tt>\magnification</tt> command.
+
+<div class="p"><!----></div>
+In TeX (using the Plain macros) the <tt>\magnification</tt> is
+frequently used to produce text size that is readable. It scales
+everything up within the normal paper size. However, when producing
+pdf (but not when producing dvi), pdftex fails to do this scaling
+correctly, because it relies on different variables for its vsize,
+voffset etc. I have had a long discussion (<a href="http://www.codecomments.com/Tex/message784423.html">read argument</a>) with the
+authors of pdftex. They do not consider this erroneous behavior to be
+worth fixing. Or at least they have so far refused to fix it. 
+
+<div class="p"><!----></div>
+Actually there is something of a demarcation problem in that the fix
+that is offered here is applied to the file pdftex.ini. That file is
+considered by some to be the responsibility of the TeX distribution
+rather than the programmers of pdftex. The distribution tetex, which
+is what linux distributions have used for a long time, is now not
+actively being developed. Therefore it does not seem possible to
+persuade anyone to patch the system to correct this incompatibility.
+
+<div class="p"><!----></div>
+That is why the present script is being distributed. If you have
+problems with plain TeX files, <tt>\magnification</tt>, and pdftex
+producing pdf, you can use the package to correct your tetex system so
+that it will do correct scaling. It works automatically (on standard
+linux distributions).
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>Hgold</a>,
+version 3.77.<br />On 10 May 2008, 18:22.</small>
+</html>

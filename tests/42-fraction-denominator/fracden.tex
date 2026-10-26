@@ -1,0 +1,25 @@
+% $Id$
+% Public domain. From Ulrike Fischer, 29sep25.
+
+\input plain  % avoid making a fmt
+\pdfoutput=1 \pdftrailerid{} % only happens with pdf output
+\voffset=-72.27pt
+\newbox\sabox
+\setbox\sabox\hbox{abc $1 \over 2$ abc}
+\setbox\sabox\hbox{\raise\dp\sabox\box\sabox}
+\global\pdfpageheight=\ht\sabox %+1pt
+% makes bug go away: \global\pdfpageheight=\dimexpr\ht\sabox +1pt
+\box\sabox
+%\loggingall % no difference in .log files
+\end
+
+%Date: Mon, 29 Sep 2025 13:14:49 +0000
+%From: Ulrike Fischer <fischer@troubleshooting-tex.de>
+%To: The Thanh Han <hanthethanh@gmail.com>, Karl Berry <karl@freefriends.org>
+%Subject: shifted denominator if pdfpageheight is used
+%
+%in the following document the denominator of the fraction is shifted to 
+%the left:
+%
+%This is new in texlive 2025, in 2024 it was ok. If the +1pt is 
+%uncommented the effect disappears.

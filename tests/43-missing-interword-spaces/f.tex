@@ -1,0 +1,21 @@
+\input plain.tex
+\input pdftexconfig.tex
+\input pdftexmagfix.tex
+
+\pdfcompresslevel=0
+\pdfobjcompresslevel=0
+\footline={}
+
+\pdfinterwordspaceon
+The cat 
+\pdffakespace
+\pdfliteral{/T<<>>BDC}%
+sat on the %
+\pdffakespace
+\pdfliteral{EMC}%
+\pdfliteral{/T<<>>BDC}%
+mat%
+\pdfliteral{EMC}%
+.
+
+\bye

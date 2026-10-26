@@ -1,0 +1,285 @@
+diff -ur xpdf-4.06/goo/gfile.cc xpdf-src/goo/gfile.cc
+--- xpdf-4.06/goo/gfile.cc	Fri Nov 14 07:08:30 2025
++++ xpdf-src/goo/gfile.cc	Thu Jan 29 15:00:37 2026
+@@ -441,6 +441,7 @@
+ #endif
+ }
+ 
++#ifndef PDF_PARSER_ONLY
+ GBool openTempFile(GString **name, FILE **f,
+ 		   const char *mode, const char *ext) {
+ #if defined(_WIN32)
+@@ -555,6 +556,7 @@
+   return gTrue;
+ #endif
+ }
++#endif /* !PDF_PARSER_ONLY */
+ 
+ GBool createDir(char *path, int mode) {
+ #ifdef _WIN32
+@@ -648,7 +650,7 @@
+ #endif
+ 
+ FILE *openFile(const char *path, const char *mode) {
+-#if defined(_WIN32)
++#if 0 /* we use fsyscp_fopen for fopen on win32 */
+   wchar_t wPath[winMaxLongPath + 1];
+   wchar_t wMode[8];
+   int i;
+@@ -667,7 +669,7 @@
+ #endif
+ }
+ 
+-#ifdef _WIN32
++#if 0
+ void readWindowsShortcut(wchar_t *wPath, size_t wPathSize) {
+   size_t n = wcslen(wPath);
+   if (n < 4 || wcscmp(wPath + n - 4, L".lnk")) {
+@@ -715,8 +717,11 @@
+ 
+ int makeDir(const char *path, int mode) {
+ #ifdef _WIN32
++/*
+   wchar_t wPath[winMaxLongPath + 1];
+   return _wmkdir(fileNameToUCS2(path, wPath, winMaxLongPath + 1));
++*/
++  return _mkdir(path);
+ #else
+   return mkdir(path, (mode_t)mode);
+ #endif
+@@ -775,6 +780,7 @@
+ #endif
+ }
+ 
++#ifndef PDF_PARSER_ONLY
+ void fixCommandLine(int *argc, char **argv[]) {
+ #ifdef _WIN32
+   int argcw;
+@@ -800,3 +806,4 @@
+   LocalFree(argvw);
+ #endif
+ }
++#endif /* !PDF_PARSER_ONLY */
+diff -ur xpdf-4.06/goo/gfile.h xpdf-src/goo/gfile.h
+--- xpdf-4.06/goo/gfile.h	Fri Nov 14 07:08:30 2025
++++ xpdf-src/goo/gfile.h	Thu Jan 29 14:59:47 2026
+@@ -77,8 +77,11 @@
+ // should be done to the returned file pointer; the file may be
+ // reopened later for reading, but not for writing.  The <mode> string
+ // should be "w" or "wb".  Returns true on success.
++
++#ifndef PDF_PARSER_ONLY
+ extern GBool openTempFile(GString **name, FILE **f,
+ 			  const char *mode, const char *ext);
++#endif /* !PDF_PARSER_ONLY */
+ 
+ // Create a directory.  Returns true on success.
+ extern GBool createDir(char *path, int mode);
+@@ -106,7 +109,7 @@
+ // UCS-2 and calls _wfopen().  On other OSes, this simply calls fopen().
+ extern FILE *openFile(const char *path, const char *mode);
+ 
+-#ifdef _WIN32
++#if 0
+ // If [wPath] is a Windows shortcut (.lnk file), read the target path
+ // and store it back into [wPath].
+ extern void readWindowsShortcut(wchar_t *wPath, size_t wPathSize);
+@@ -145,6 +148,8 @@
+ 
+ // On Windows, this gets the Unicode command line and converts it to
+ // UTF-8.  On other systems, this is a nop.
++#ifndef PDF_PARSER_ONLY
+ extern void fixCommandLine(int *argc, char **argv[]);
++#endif /* !PDF_PARSER_ONLY */
+ 
+ #endif
+diff -ur xpdf-4.06/xpdf/Error.cc xpdf-src/xpdf/Error.cc
+--- xpdf-4.06/xpdf/Error.cc	Fri Nov 14 07:08:30 2025
++++ xpdf-src/xpdf/Error.cc	Thu Jan 29 14:39:22 2026
+@@ -73,11 +73,14 @@
+     (*errorCbk)(errorCbkData, category, (int)pos, sanitized->getCString());
+   } else {
+     fflush(stdout);
++    /* Label the error messages for pdftex's use as libxpdf.
++       It would be cleaner to use the callback feature, but seems
++       like too much trouble at this late date. */
+     if (pos >= 0) {
+-      fprintf(stderr, "%s (%d): %s\n",
++      fprintf(stderr, "\nlibxpdf: %s (%d): %s\n",
+ 	      errorCategoryNames[category], (int)pos, sanitized->getCString());
+     } else {
+-      fprintf(stderr, "%s: %s\n",
++      fprintf(stderr, "\nlibxpdf: %s: %s\n",
+ 	      errorCategoryNames[category], sanitized->getCString());
+     }
+     fflush(stderr);
+diff -ur xpdf-4.06/xpdf/GlobalParams.cc xpdf-src/xpdf/GlobalParams.cc
+--- xpdf-4.06/xpdf/GlobalParams.cc	Fri Nov 14 07:08:30 2025
++++ xpdf-src/xpdf/GlobalParams.cc	Thu Jan 29 14:08:16 2026
+@@ -39,7 +39,8 @@
+ #include "FontEncodingTables.h"
+ #include "GlobalParams.h"
+ 
+-#ifdef _WIN32
++/* defined in kpathsea/win32lib.h for Visual Studio */
++#if defined(_WIN32) && !defined(_MSC_VER)
+ #ifndef __GNUC__
+ #  define strcasecmp stricmp
+ #  define strncasecmp strnicmp
+diff -ur xpdf-4.06/xpdf/GlobalParams.h xpdf-src/xpdf/GlobalParams.h
+--- xpdf-4.06/xpdf/GlobalParams.h	Fri Nov 14 07:08:30 2025
++++ xpdf-src/xpdf/GlobalParams.h	Thu Jan 29 14:40:36 2026
+@@ -5,6 +5,9 @@
+ // Copyright 2001-2003 Glyph & Cog, LLC
+ //
+ //========================================================================
++//  Modified for TeX Live by Peter Breitenlohner
++//  See top-level ChangeLog for a list of all modifications
++//========================================================================
+ 
+ #ifndef GLOBALPARAMS_H
+ #define GLOBALPARAMS_H
+@@ -233,7 +236,7 @@
+ 
+   // Initialize the global parameters by attempting to read a config
+   // file.
+-  GlobalParams(const char *cfgFileName);
++  GlobalParams(const char *cfgFileName = NULL);
+ 
+   ~GlobalParams();
+ 
+diff -ur xpdf-4.06/xpdf/PDFDoc.cc xpdf-src/xpdf/PDFDoc.cc
+--- xpdf-4.06/xpdf/PDFDoc.cc	Fri Nov 14 07:08:30 2025
++++ xpdf-src/xpdf/PDFDoc.cc	Thu Jan 29 15:22:44 2026
+@@ -61,14 +61,14 @@
+ 	       GString *userPassword, PDFCore *coreA) {
+   Object obj;
+   GString *fileName1, *fileName2;
+-#ifdef _WIN32
++#if 0
+   int n, i;
+ #endif
+ 
+   init(coreA);
+ 
+   fileName = fileNameA;
+-#ifdef _WIN32
++#if 0
+   n = fileName->getLength();
+   fileNameU = (wchar_t *)gmallocn(n + 1, sizeof(wchar_t));
+   for (i = 0; i < n; ++i) {
+@@ -111,7 +111,7 @@
+   ok = setup(ownerPassword, userPassword);
+ }
+ 
+-#ifdef _WIN32
++#if 0
+ PDFDoc::PDFDoc(wchar_t *fileNameA, int fileNameLen, GString *ownerPassword,
+ 	       GString *userPassword, PDFCore *coreA) {
+   OSVERSIONINFO version;
+@@ -161,11 +161,11 @@
+ 
+ PDFDoc::PDFDoc(char *fileNameA, GString *ownerPassword,
+ 	       GString *userPassword, PDFCore *coreA) {
+-#ifdef _WIN32
++#if 0
+   OSVERSIONINFO version;
+ #endif
+   Object obj;
+-#ifdef _WIN32
++#if 0
+   Unicode u;
+   int i, j;
+ #endif
+@@ -174,7 +174,7 @@
+ 
+   fileName = new GString(fileNameA);
+ 
+-#if defined(_WIN32)
++#if 0
+   wchar_t wPath[winMaxLongPath + 1];
+   i = 0;
+   j = 0;
+@@ -217,7 +217,7 @@
+ 
+ PDFDoc::PDFDoc(BaseStream *strA, GString *ownerPassword,
+ 	       GString *userPassword, PDFCore *coreA) {
+-#ifdef _WIN32
++#if 0
+   int n, i;
+ #endif
+ 
+@@ -225,7 +225,7 @@
+ 
+   if (strA->getFileName()) {
+     fileName = strA->getFileName()->copy();
+-#ifdef _WIN32
++#if 0
+     n = fileName->getLength();
+     fileNameU = (wchar_t *)gmallocn(n + 1, sizeof(wchar_t));
+     for (i = 0; i < n; ++i) {
+@@ -235,7 +235,7 @@
+ #endif
+   } else {
+     fileName = NULL;
+-#ifdef _WIN32
++#if 0
+     fileNameU = NULL;
+ #endif
+   }
+@@ -357,7 +357,7 @@
+   if (fileName) {
+     delete fileName;
+   }
+-#ifdef _WIN32
++#if 0
+   if (fileNameU) {
+     gfree(fileNameU);
+   }
+@@ -605,7 +605,7 @@
+   return ret;
+ }
+ 
+-#ifdef _WIN32
++#if 0
+ GBool PDFDoc::saveEmbeddedFile(int idx, const wchar_t *path, int pathLen) {
+   FILE *f;
+   OSVERSIONINFO version;
+diff -ur xpdf-4.06/xpdf/Page.cc xpdf-src/xpdf/Page.cc
+--- xpdf-4.06/xpdf/Page.cc	Fri Nov 14 07:08:30 2025
++++ xpdf-src/xpdf/Page.cc	Thu Jan 29 14:54:59 2026
+@@ -548,9 +548,9 @@
+   delete links;
+ }
+ 
+-#ifndef PDF_PARSER_ONLY
+ void Page::getDefaultCTM(double *ctm, double hDPI, double vDPI,
+ 			 int rotate, GBool useMediaBox, GBool upsideDown) {
++#ifndef PDF_PARSER_ONLY
+   GfxState *state;
+   int i;
+ 
+@@ -567,6 +567,5 @@
+     ctm[i] = state->getCTM()[i];
+   }
+   delete state;
+-}
+ #endif
+-
++}
+diff -ur xpdf-4.06/xpdf/config.h xpdf-src/xpdf/config.h
+--- xpdf-4.06/xpdf/config.h	Fri Nov 14 07:08:30 2025
++++ xpdf-src/xpdf/config.h	Sun Jan 25 12:18:00 2026
+@@ -69,10 +69,12 @@
+ // popen
+ //------------------------------------------------------------------------
+ 
++/* not necessary: defined in kpathsea/win32lib.h.
+ #if defined(_MSC_VER) || defined(__BORLANDC__)
+ #define popen _popen
+ #define pclose _pclose
+ #endif
++*/
+ 
+ #if defined(VMS) || defined(VMCMS) || defined(DOS) || defined(OS2) || defined(__EMX__) || defined(_WIN32) || defined(__DJGPP__)
+ #define POPEN_READ_MODE "rb"

@@ -1,0 +1,17 @@
+% $Id: dct.tex 965 2025-09-26 15:45:01Z karl $
+% Public domain. From Ulrike Fischer, 29sep25.
+
+\pdfcompresslevel=0
+\pdfobjcompresslevel=0
+\input plain  % avoid making a fmt
+\pdfoutput=1 \pdftrailerid{} % only happens with pdf output
+\voffset=-72.27pt
+\newbox\sabox
+\setbox\sabox\hbox{abc $1 \over 2$ abc}
+\setbox\sabox\hbox{\raise\dp\sabox\box\sabox}
+\global\pdfpageheight=\ht\sabox
+% uncomment the below line to make bug go away:
+\global\advance\pdfpageheight by 1pt
+\box\sabox
+%\loggingall % no difference in .log files
+\end

@@ -1,0 +1,13 @@
+% $Id$
+% Public domain.
+% https://tug.org/pipermail/pdftex/2025-September/009457.html
+% https://tex.stackexchange.com/questions/751444
+
+\catcode`\{=1 \catcode`\}=2
+\output={\shipout\box255}
+\pdfoutput=1
+\pdfmajorversion=2
+\pdfminorversion=0
+\pdfximage{dct.jpg} % uni-bonn-background-cyber.jpg
+\pdfrefximage\pdflastximage
+\end

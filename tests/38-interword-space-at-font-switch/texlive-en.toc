@@ -1,0 +1,93 @@
+\contentsline {section}{\numberline {1}Introduction}{3}%
+\contentsline {subsection}{\numberline {1.1}\TeX \ Live and the \TeX \ Collection}{3}%
+\contentsline {subsection}{\numberline {1.2}Operating system support}{4}%
+\contentsline {subsection}{\numberline {1.3}Basic installation of \TL {}}{4}%
+\contentsline {subsection}{\numberline {1.4}Security considerations}{4}%
+\contentsline {subsection}{\numberline {1.5}Getting help}{5}%
+\contentsline {section}{\numberline {2}Overview of \TeX \ Live}{5}%
+\contentsline {subsection}{\numberline {2.1}The \TeX \ Collection: \TL , Mac\TeX , MiK\TeX , CTAN}{6}%
+\contentsline {subsection}{\numberline {2.2}Top level \TL {} directories}{6}%
+\contentsline {subsection}{\numberline {2.3}Overview of the predefined texmf trees}{7}%
+\contentsline {subsection}{\numberline {2.4}Extensions to \TeX }{8}%
+\contentsline {subsection}{\numberline {2.5}Other notable programs in \TL }{8}%
+\contentsline {section}{\numberline {3}Installation}{9}%
+\contentsline {subsection}{\numberline {3.1}Starting the installer}{9}%
+\contentsline {subsubsection}{\numberline {3.1.1}Unix}{9}%
+\contentsline {subsubsection}{\numberline {3.1.2}macOS\xspace }{10}%
+\contentsline {subsubsection}{\numberline {3.1.3}Windows}{11}%
+\contentsline {subsubsection}{\numberline {3.1.4}Cygwin}{11}%
+\contentsline {subsubsection}{\numberline {3.1.5}The text installer}{11}%
+\contentsline {subsubsection}{\numberline {3.1.6}The graphical installer}{12}%
+\contentsline {subsection}{\numberline {3.2}Running the installer}{12}%
+\contentsline {subsubsection}{\numberline {3.2.1}Binary systems menu (Unix only)}{12}%
+\contentsline {subsubsection}{\numberline {3.2.2}Selecting what is to be installed}{13}%
+\contentsline {subsubsection}{\numberline {3.2.3}Directories}{14}%
+\contentsline {subsubsection}{\numberline {3.2.4}Options}{16}%
+\contentsline {subsection}{\numberline {3.3}Command-line install-tl options}{17}%
+\contentsline {subsubsection}{\numberline {3.3.1}The \texttt {-repository} option}{18}%
+\contentsline {subsection}{\numberline {3.4}Post-install actions}{18}%
+\contentsline {subsubsection}{\numberline {3.4.1}Environment variables for Unix}{18}%
+\contentsline {subsubsection}{\numberline {3.4.2}Environment variables: Global configuration}{19}%
+\contentsline {subsubsection}{\numberline {3.4.3}Internet updates after DVD\xspace \ installation}{19}%
+\contentsline {subsubsection}{\numberline {3.4.4}System font configuration for \XeTeX \ and Lua\TeX }{20}%
+\contentsline {subsubsection}{\numberline {3.4.5}\ConTeXt {} LMTX and MKIV}{20}%
+\contentsline {subsubsection}{\numberline {3.4.6}Integrating local and personal macros}{21}%
+\contentsline {subsubsection}{\numberline {3.4.7}Integrating third-party fonts}{21}%
+\contentsline {subsection}{\numberline {3.5}Testing the installation}{22}%
+\contentsline {subsection}{\numberline {3.6}Uninstalling T\kern -.1667em\lower .5ex\hbox {E}\kern -.125emX\spacefactor 1000 {} Live\xspace }{23}%
+\contentsline {subsection}{\numberline {3.7}Links for additional downloadable software}{24}%
+\contentsline {section}{\numberline {4}Specialized installations}{24}%
+\contentsline {subsection}{\numberline {4.1}Shared-user (or cross-machine) installations}{25}%
+\contentsline {subsection}{\numberline {4.2}Portable (USB\xspace {}) installations}{25}%
+\contentsline {section}{\numberline {5}\textsf {tlmgr}: Managing your installation}{26}%
+\contentsline {subsection}{\numberline {5.1}GUI\xspace {} interfaces for \textsf {tlmgr}}{26}%
+\contentsline {subsection}{\numberline {5.2}Sample \textsf {tlmgr} command-line invocations}{27}%
+\contentsline {section}{\numberline {6}Notes on Windows}{29}%
+\contentsline {subsection}{\numberline {6.1}Windows-specific features}{29}%
+\contentsline {subsection}{\numberline {6.2}Additional software included on Windows}{29}%
+\contentsline {subsection}{\numberline {6.3}Using external Perl, Tcl/Tk and Ghostscript installations}{30}%
+\contentsline {subsection}{\numberline {6.4}User Profile is Home}{30}%
+\contentsline {subsection}{\numberline {6.5}The Windows registry}{30}%
+\contentsline {subsection}{\numberline {6.6}Windows permissions}{31}%
+\contentsline {subsection}{\numberline {6.7}Increasing maximum memory on Windows and Cygwin}{31}%
+\contentsline {section}{\numberline {7}A user's guide to Web2C}{32}%
+\contentsline {subsection}{\numberline {7.1}Kpathsea path searching}{33}%
+\contentsline {subsubsection}{\numberline {7.1.1}Path sources}{33}%
+\contentsline {subsubsection}{\numberline {7.1.2}Config files}{34}%
+\contentsline {subsubsection}{\numberline {7.1.3}Path expansion}{35}%
+\contentsline {subsubsection}{\numberline {7.1.4}Default expansion}{35}%
+\contentsline {subsubsection}{\numberline {7.1.5}Brace expansion}{35}%
+\contentsline {subsubsection}{\numberline {7.1.6}Subdirectory expansion}{36}%
+\contentsline {subsubsection}{\numberline {7.1.7}Summary of special characters in \texttt {texmf.cnf} files}{36}%
+\contentsline {subsection}{\numberline {7.2}Filename databases}{36}%
+\contentsline {subsubsection}{\numberline {7.2.1}The filename database}{36}%
+\contentsline {subsubsection}{\numberline {7.2.2}kpsewhich: Standalone path searching}{37}%
+\contentsline {subsubsection}{\numberline {7.2.3}Examples of use}{38}%
+\contentsline {subsubsection}{\numberline {7.2.4}Debugging actions}{39}%
+\contentsline {subsection}{\numberline {7.3}Runtime options}{42}%
+\contentsline {subsection}{\numberline {7.4}\texttt {\$TEXMFDOTDIR}}{42}%
+\contentsline {section}{\numberline {8}Acknowledgements}{43}%
+\contentsline {section}{\numberline {9}Release history}{45}%
+\contentsline {subsection}{\numberline {9.1}Past}{45}%
+\contentsline {subsubsection}{\numberline {9.1.1}2003}{46}%
+\contentsline {subsubsection}{\numberline {9.1.2}2004}{46}%
+\contentsline {subsubsection}{\numberline {9.1.3}2005}{48}%
+\contentsline {subsubsection}{\numberline {9.1.4}2006--2007}{49}%
+\contentsline {subsubsection}{\numberline {9.1.5}2008}{50}%
+\contentsline {subsubsection}{\numberline {9.1.6}2009}{50}%
+\contentsline {subsubsection}{\numberline {9.1.7}2010}{51}%
+\contentsline {subsubsection}{\numberline {9.1.8}2011}{52}%
+\contentsline {subsubsection}{\numberline {9.1.9}2012}{52}%
+\contentsline {subsubsection}{\numberline {9.1.10}2013}{53}%
+\contentsline {subsubsection}{\numberline {9.1.11}2014}{53}%
+\contentsline {subsubsection}{\numberline {9.1.12}2015}{54}%
+\contentsline {subsubsection}{\numberline {9.1.13}2016}{55}%
+\contentsline {subsubsection}{\numberline {9.1.14}2017}{56}%
+\contentsline {subsubsection}{\numberline {9.1.15}2018}{57}%
+\contentsline {subsubsection}{\numberline {9.1.16}2019}{57}%
+\contentsline {subsubsection}{\numberline {9.1.17}2020}{58}%
+\contentsline {subsubsection}{\numberline {9.1.18}2021}{59}%
+\contentsline {subsubsection}{\numberline {9.1.19}2022}{61}%
+\contentsline {subsubsection}{\numberline {9.1.20}2023}{62}%
+\contentsline {subsection}{\numberline {9.2}Present: 2024}{64}%
+\contentsline {subsection}{\numberline {9.3}Future}{65}%
